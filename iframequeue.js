@@ -1,32 +1,93 @@
-/*
-** Iframe priority queue
-** AH 1/24/2017
-*/
+var iframeQueue = {
+	   
+		 getIframes: function(){
+			 /*getter method to retrieve iframes*/
+			 
+			 try {
+				 
+				 /*get by class name each way we are embedding them*/
+				 var elems = document.querySelectorAll("iframe.DZembed-table, iframe.DZrdembed-table");
+				 
+				 console.log("elements: " + JSON.stringify(elems));
+				 
+				 return elems;
+				 
+			 } catch (err){
+				 
+				 console.log("Error getting iframes: " + err.message);
+				 
+			 }
+			 
+		 },
+	
+		 blockIframes: function(){
+				
+				var iframes = iframeQueue.getIframes();
+				
+				try {
+					
+					jQuery.map(iframes, function(e, i){
+						
+						/* start at third iframe in page */
+						if(i > 2){
+							/*set display to none*/
+							jQuery(e).css("display","none");
+							
+						}
+					  
+				  }); 
+					
+				} catch (err){
+					
+					console.log("Error getting iframes: " + err.message);
+					
+				}
+				
+		 },
+		 
+		 returnIframes: function(){
+			 
+			 var t = new Date().getTime(),
+			       s = 500,
+						 i = 0;
+			 
+			 /*after window.onload event, add iframes back at 1/2 second interval*/
+			 jQuery(window).load(function(){
+				 
+				(function returnIframes(){
+					
+					window.setTimeout(function(){
+					
+						var iframes = iframeQueue.getIframes(), 
+						      ct = new Date().getTime();
+									
+						iframes[i++].style.display = "block"; 
+						
+						console.log("Added iframe " + i + " to page: " + (ct-t)/1000 + " seconds after page load.");
+						
+						i < iframes.length ? returnIframes() : console.log("Done adding iframes...");
 
-(function(){
-  /*block all iframes from loading except first 3*/
-  /*get array of src attr of iframes from 3-*/
-  /*wait until DOM has loaded before attempting new iframe loads*/
-  
-  // if jquery is available use it
-    var iframes = window.jQuery ? jQuery(document).find('iframe') : document.getElementsByTagName('iframe'),
-    srcUrls = [],
-    iLen = iframes.length;
-    for(var i = 3; i < iLen; i++){
-      if(iframes[i].src){
-        srcUrls.push(iframes[i].src);
-        iframes[i].removeAttr('src');
-      }
-    }
-    // srcUrls contains src urls for > 3
-    window.onload = function(){
-      var iframes = window.jQuery ? jQuery(document).find('iframe') : document.getElementsByTagName('iframe')
-      for(var i = 3; i < iframes.length; i++)
-      {
-        if(!iframes[i].src || iframes[i].src.length < 1)
-        {
-          iframes[i].attr('src',srcUrls[i-4]);
-        }
-      }
-    }
-});
+						}, s);
+						
+					})();
+					
+			});
+			 
+		 },
+		 
+		 initProcess: function(){
+			 
+			 iframeQueue.blockIframes();
+			 
+			 iframeQueue.returnIframes();
+			 
+		 }
+ 
+
+};
+
+if(window.iframeQueue){
+	
+	iframeQueue.initProcess();
+	
+}
